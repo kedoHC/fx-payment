@@ -1,20 +1,22 @@
 
 def converter(amount, from_currency, to_currency='MXN'):
   """
-    Vamos a asumir que:
+    Assumptions:
     1 USD = 18.70 MXN
     1 MXN = 0.053 USD
-    y que el saldo siempre será guardado en MXN
+    The portfolio balance will always be saved in MXN
   """
-  USD_MXN = 18.70
-  MXN_USD = 0.053
+  MXN_TO_USD = 18.70
 
   if isinstance(amount, (int, float)):
     if from_currency == 'MXN' and to_currency == "USD":
-      return amount * MXN_USD
+      print("here")
+      return amount / MXN_TO_USD
     elif from_currency == 'USD' and to_currency == "MXN":
-      return amount * USD_MXN
-    else: 
+      return amount *  MXN_TO_USD
+    elif from_currency == 'MXN' and to_currency == "MXN":
+      return amount
+    else:
       return None
   else:
     return None
