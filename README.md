@@ -1,43 +1,43 @@
 # FX Payment
 
-Una aplicación Flask para el procesamiento de pagos en divisas.
+A Flask application for foreign exchange payment processing.
 
-## Instalación
+## Installation
 
-### 1. Crear el entorno virtual
+### 1. Create the virtual environment
 
 ```bash
 python3 -m venv venv
 ```
 
-### 2. Activar el entorno virtual
+### 2. Activate the virtual environment
 
-**En macOS/Linux:**
+**On macOS/Linux:**
 
 ```bash
 source venv/bin/activate
 ```
 
-**En Windows (Command Prompt o PowerShell):**
+**On Windows (Command Prompt or PowerShell):**
 
 ```cmd
 venv\Scripts\activate
 ```
 
-### 3. Instalar dependencias
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Uso
+## Usage
 
 ```bash
 python app.py
 ```
 
-## Estructura del proyecto
+## Project Structure
 
-- `app.py` - Aplicación principal Flask
-- `requirements.txt` - Dependencias del proyecto
-- `venv/` - Entorno virtual de Python
+- `app.py` - Main Flask application
+- `requirements.txt` - Project dependencies
+- `venv/` - Python virtual environment
