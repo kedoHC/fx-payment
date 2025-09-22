@@ -73,7 +73,7 @@ def withdraw_wallet(user_id):
   except ValidationError as err:
      return jsonify({"errors": err.messages}), 422
 
-  amount_to_mx = converter(**validated_data)
+  amount_to_mx = converter(validated_data['amount'], validated_data['currency'])
 
   if validate_user(user_id) and validate_balance(user_id, amount_to_mx):
     wallets_data[user_id]['balance'] -= amount_to_mx
@@ -85,10 +85,9 @@ def withdraw_wallet(user_id):
 def get_balances(user_id):
   """ get balances MXN and USD"""
 
-  amount_mxn = wallets_data[user_id]['balance']
-  amount_usd = converter (wallets_data[user_id]['balance'], "MXN", "USD")
-
-  if validate_user(user_id):
+  if validate_user(user_id) and user_id in wallets_data:
+    amount_mxn = wallets_data[user_id]['balance']
+    amount_usd = converter(amount_mxn, "MXN", "USD")
     return {"usd": float(f"{amount_usd:.2f}"), "mxn": float(f"{amount_mxn:.2f}")}
   else:
     abort(404, message="Operation not allowed")
