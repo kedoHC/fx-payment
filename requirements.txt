@@ -3,3 +3,5 @@ flask-smorest
 python-dotenv
 pytest
 pytest-flask
+sqlalchemy
+flask-sqlalchemy

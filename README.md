@@ -4,11 +4,13 @@ A Flask-based REST API for foreign exchange payment processing with support for 
 
 ## Features
 
+- 👤 **Create Users** - Create new user accounts with validation
+- 💳 **Create Wallets** - Create new wallets for users with initial balance support
 - 💰 **Fund Wallet** - Add money to user wallets
 - 💸 **Withdraw Funds** - Remove money from wallets with balance validation
 - 🔄 **Currency Conversion** - Convert between USD and MXN
 - 📊 **Balance Inquiry** - Check wallet balances in both currencies
-- ✅ **Comprehensive Testing** - 16 tests covering all endpoints
+- ✅ **Comprehensive Testing** - 35+ tests covering all endpoints
 - 🐳 **Docker Support** - Easy containerized deployment
 
 ## Assumptions
@@ -83,6 +85,11 @@ The application will start on `http://localhost:5001`
 
 The FX Payment API provides the following endpoints:
 
+#### User Management
+- **POST** `/users` - Create a new user account
+
+#### Wallet Management
+- **POST** `/wallets` - Create a new wallet for a user
 - **POST** `/wallets/<user_id>/fund` - Add funds to a wallet (USD amounts automatically converted to MXN for storage)
 - **POST** `/wallets/<user_id>/withdraw` - Withdraw funds from a wallet (USD amounts converted to MXN for balance validation)
 - **POST** `/wallets/<user_id>/convert` - Convert between USD and MXN currencies
@@ -92,8 +99,29 @@ The FX Payment API provides the following endpoints:
 **Fixed Exchange Rate:** 1 USD = 18.70 MXN  
 **Storage:** All balances stored in MXN
 
-### Example API Request
+### Example API Requests
 
+#### Creating a User
+```bash
+# Create a new user
+curl -X POST http://localhost:5001/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com", "age": 30}'
+
+# Response: {"message": "User created successfully", "user_id": "generated-uuid"}
+```
+
+#### Creating a Wallet
+```bash
+# Create a wallet for the user (with $100 USD initial balance)
+curl -X POST http://localhost:5001/wallets \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "f9e8d7c6-b5a4-43f2-1e0d-9c8b7a6f5e4d", "initial_balance": 100.0, "currency": "USD"}'
+
+# Response: {"message": "Wallet created successfully", "user_id": "f9e8d7c6-b5a4-43f2-1e0d-9c8b7a6f5e4d"}
+```
+
+#### Funding and Checking Balances
 ```bash
 # Fund a wallet with $100 USD (will be stored as 1,870 MXN)
 curl -X POST http://localhost:5001/wallets/f9e8d7c6-b5a4-43f2-1e0d-9c8b7a6f5e4d/fund \
@@ -134,6 +162,18 @@ pytest -v tests/
 #### Run Tests by Service
 
 You can run tests for individual services:
+
+**Create User Service Tests (8 tests):**
+
+```bash
+pytest -v tests/create_user_test.py
+```
+
+**Create Wallet Service Tests (9 tests):**
+
+```bash
+pytest -v tests/create_wallet_test.py
+```
 
 **Fund Service Tests (5 tests):**
 
@@ -213,16 +253,18 @@ The test suite covers:
 - ✅ **Business logic** (insufficient balance, currency conversion)
 - ✅ **Edge cases** (zero balance, different currencies)
 
-**Total: 16 tests** across all endpoints
+**Total: 33 tests** across all endpoints
 
 ### Test Structure
 
 Each test file follows a consistent pattern:
 
-- `fund_test.py` - Tests for `/wallets/<user_id>/fund` endpoint
-- `convert_test.py` - Tests for `/wallets/<user_id>/convert` endpoint
-- `withdraw_test.py` - Tests for `/wallets/<user_id>/withdraw` endpoint
-- `balances_test.py` - Tests for `/wallets/<user_id>/balances` endpoint
+- `create_user_test.py` - Tests for `/users` endpoint (8 tests)
+- `create_wallet_test.py` - Tests for `/wallets` endpoint (9 tests)
+- `fund_test.py` - Tests for `/wallets/<user_id>/fund` endpoint (5 tests)
+- `convert_test.py` - Tests for `/wallets/<user_id>/convert` endpoint (4 tests)
+- `withdraw_test.py` - Tests for `/wallets/<user_id>/withdraw` endpoint (4 tests)
+- `balances_test.py` - Tests for `/wallets/<user_id>/balances` endpoint (3 tests)
 
 ## Project Structure
 
@@ -230,6 +272,8 @@ Each test file follows a consistent pattern:
 - `requirements.txt` - Project dependencies
 - `venv/` - Python virtual environment
 - `tests/` - Test suite
+  - `create_user_test.py` - User creation endpoint tests
+  - `create_wallet_test.py` - Wallet creation endpoint tests
   - `fund_test.py` - Fund wallet endpoint tests
   - `convert_test.py` - Currency conversion endpoint tests
   - `withdraw_test.py` - Withdraw wallet endpoint tests
