@@ -41,3 +41,19 @@ python app.py
 - `app.py` - Main Flask application
 - `requirements.txt` - Project dependencies
 - `venv/` - Python virtual environment
+
+## Docker usage
+
+```bash
+docker build - fx-payment .
+```
+
+```bash
+docker run -p 5005:5000 fx-payment
+```
+
+[Optional] Use for development process
+
+```bash
+docker run -p 5005:5000 -w /app -v "$(pwd):/app" fx-payment
+```
