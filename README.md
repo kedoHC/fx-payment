@@ -1,6 +1,45 @@
 # FX Payment
 
-A Flask application for foreign exchange payment processing.
+A Flask-based REST API for foreign exchange payment processing with support for USD and MXN currencies.
+
+## Features
+
+- 💰 **Fund Wallet** - Add money to user wallets
+- 💸 **Withdraw Funds** - Remove money from wallets with balance validation
+- 🔄 **Currency Conversion** - Convert between USD and MXN
+- 📊 **Balance Inquiry** - Check wallet balances in both currencies
+- ✅ **Comprehensive Testing** - 16 tests covering all endpoints
+- 🐳 **Docker Support** - Easy containerized deployment
+
+## Assumptions
+
+This project operates under the following assumptions:
+
+- 💰 **Storage Currency**: All wallet balances are stored internally in Mexican Pesos (MXN)
+- 🌍 **Supported Currencies**: Only MXN (Mexican Peso) and USD (US Dollar) are supported for funding, withdrawals, and conversions
+- 💱 **Fixed Exchange Rate**: The conversion rate is fixed at **1 USD = 18.70 MXN**
+- 🔄 **Automatic Conversion**: When funding or withdrawing in USD, amounts are automatically converted to/from MXN for storage
+- 📈 **Balance Display**: The `/balances` endpoint returns amounts in both MXN (stored value) and USD (converted value)
+
+## Quick Start
+
+```bash
+# Clone and setup
+git clone <repository-url>
+cd fx-payment
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On macOS/Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python app.py
+```
+
+The API will be available at `http://localhost:5001`
 
 ## Installation
 
@@ -32,8 +71,41 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Start the Application
+
 ```bash
 python app.py
+```
+
+The application will start on `http://localhost:5001`
+
+### API Endpoints
+
+The FX Payment API provides the following endpoints:
+
+- **POST** `/wallets/<user_id>/fund` - Add funds to a wallet (USD amounts automatically converted to MXN for storage)
+- **POST** `/wallets/<user_id>/withdraw` - Withdraw funds from a wallet (USD amounts converted to MXN for balance validation)
+- **POST** `/wallets/<user_id>/convert` - Convert between USD and MXN currencies
+- **GET** `/wallets/<user_id>/balances` - Get wallet balances displayed in both MXN (stored) and USD (converted)
+
+**Supported Currencies:** USD, MXN (only)  
+**Fixed Exchange Rate:** 1 USD = 18.70 MXN  
+**Storage:** All balances stored in MXN
+
+### Example API Request
+
+```bash
+# Fund a wallet with $100 USD (will be stored as 1,870 MXN)
+curl -X POST http://localhost:5001/wallets/f9e8d7c6-b5a4-43f2-1e0d-9c8b7a6f5e4d/fund \
+  -H "Content-Type: application/json" \
+  -d '{"currency": "USD", "amount": 100.0}'
+
+# Response: {"message": "Amount added successfully"}
+
+# Check wallet balances (returns both MXN stored amount and USD equivalent)
+curl http://localhost:5001/wallets/f9e8d7c6-b5a4-43f2-1e0d-9c8b7a6f5e4d/balances
+
+# Response: {"mxn": 1870.0, "usd": 100.0}
 ```
 
 ## Testing
@@ -167,17 +239,25 @@ Each test file follows a consistent pattern:
   - `wallets.py` - Wallet data
 - `schemas.py` - Data validation schemas
 
-## Docker usage
+## Docker Usage
+
+### Build the Docker Image
 
 ```bash
-docker build - fx-payment .
+docker build -t fx-payment .
 ```
+
+### Run the Container
 
 ```bash
 docker run -p 5005:5000 fx-payment
 ```
 
-[Optional] Use for development process
+The application will be available at `http://localhost:5005`
+
+### Development Mode (Optional)
+
+For development with live code reloading:
 
 ```bash
 docker run -p 5005:5000 -w /app -v "$(pwd):/app" fx-payment
