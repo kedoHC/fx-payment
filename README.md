@@ -25,7 +25,7 @@ This project operates under the following assumptions:
 
 ```bash
 # Clone and setup
-git clone <repository-url>
+git clone git@github.com:kedoHC/fx-payment.git
 cd fx-payment
 
 # Create virtual environment
@@ -136,21 +136,25 @@ pytest -v tests/
 You can run tests for individual services:
 
 **Fund Service Tests (5 tests):**
+
 ```bash
 pytest -v tests/fund_test.py
 ```
 
 **Convert Service Tests (4 tests):**
+
 ```bash
 pytest -v tests/convert_test.py
 ```
 
 **Withdraw Service Tests (4 tests):**
+
 ```bash
 pytest -v tests/withdraw_test.py
 ```
 
 **Balances Service Tests (3 tests):**
+
 ```bash
 pytest -v tests/balances_test.py
 ```
