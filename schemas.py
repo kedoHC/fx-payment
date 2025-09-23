@@ -2,27 +2,39 @@ from marshmallow import Schema, fields, validate
 
 
 class PlainUsersSchema(Schema):
-  id= fields.Str(dump_only=True)
-  name= fields.Str(required=True)
-  email= fields.Str(required=True)
-  age= fields.Int(required=True)
-  is_active= fields.Boolean(required=True)
+  id = fields.Str(dump_only=True)
+  name = fields.Str(required=True)
+  email = fields.Str(required=True)
+  age = fields.Int(required=True)
+  is_active = fields.Boolean(required=True)
 
 class PlainWalletSchema(Schema):
-  id= fields.Str(dump_only=True)
-  balance= fields.Float(required=True)
-  currency= fields.Str(required=True)
-  recent_transactions= fields.Int(required=True)
-
-
-class WalletSchema(PlainWalletSchema):
-  user_id= fields.Int(required=True, dump_only=True)
-  user= fields.Nested(PlainUsersSchema(), dump_only=True)
+  id = fields.Str(dump_only=True)
+  balance = fields.Float(required=True)
+  currency = fields.Str(required=True)
+  recent_transactions = fields.Int(required=True)
+  user_id = fields.Str(dump_only=True)
 
 class UserSchema(PlainUsersSchema):
-  # wallet_id= fields.Int(required=True, dump_only=True)
-  wallet= fields.List(fields.Nested(PlainWalletSchema), dump_only=True)
+  wallet = fields.Nested(PlainWalletSchema(), dump_only=True, allow_none=True)
+  
+class WalletSchema(PlainWalletSchema):
+  user = fields.Nested(PlainUsersSchema(), dump_only=True)
 
+class UserListSchema(Schema):
+  id = fields.Str(dump_only=True)
+  name = fields.Str(dump_only=True)
+  email = fields.Str(dump_only=True)
+  age = fields.Int(dump_only=True)
+  is_active = fields.Boolean(dump_only=True)
+  wallet_id = fields.Str(dump_only=True)
+  
+class WalletListSchema(Schema):
+  id = fields.Str(dump_only=True)
+  balance = fields.Float(required=True)
+  currency = fields.Str(required=True)
+  recent_transactions = fields.Int(required=True)
+  user = fields.Nested(PlainUsersSchema(), dump_only=True)
 
 class FundSchema(Schema):
   currency = fields.Str(required=True)

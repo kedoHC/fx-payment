@@ -1,13 +1,11 @@
 from db import db
 
+class WalletsModel(db.Model):  
+    __tablename__ = "wallets"
 
-class WalletsModel(db.model):
-  __tablename__ = "wallets"
-
-
-  id = db.Columns(db.Integer, primary_key=True)
-  balance = db.Columns(db.Float(precision= 2), unique=False, nullable=False)
-  currency = db.Columns(db.String(3), unique=False, nullable=False)
-  recent_transactions = db.Columns(db.Integer, unique=False, nullable=False)
-  user_id = db.Columns(db.Integer, db.ForeingKey('users.id'), unique=False, nullable=False)
-  user = db.relationship("UsersModel", back_populates="wallets")
+    id = db.Column(db.String(36), primary_key=True)
+    balance = db.Column(db.Float, nullable=False, default=0.0)  
+    currency = db.Column(db.String(3), nullable=False, default="MXN")  
+    recent_transactions = db.Column(db.Integer, nullable=False, default=0)  
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), unique=True, nullable=False)  
+    user = db.relationship("UsersModel", back_populates="wallet")

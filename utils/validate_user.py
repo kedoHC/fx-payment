@@ -1,17 +1,6 @@
+from models import UsersModel
 
-from store.users import users_data
-
-
-def validate_user(id):
-  """ Validate user"""
-  valid_user = False
-
-  for user in users_data:
-    if user["id"] == id:
-      valid_user = True
-      
-  return valid_user
-
-      
-    
-
+def validate_user(user_id):
+    """ Validate user"""
+    user = UsersModel.query.get(user_id)
+    return user is not None and user.is_active

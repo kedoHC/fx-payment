@@ -5,3 +5,4 @@ env/
 # Archivos de Python generados
 __pycache__/
 *.pyc
+instance/
