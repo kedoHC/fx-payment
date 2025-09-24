@@ -10,4 +10,5 @@ class UsersModel(db.Model):
     name = db.Column(db.String(80), nullable=True)  
     age = db.Column(db.Integer, nullable=True) 
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    country = db.Column(db.String(80), nullable=True)  
     wallet = db.relationship("WalletsModel", back_populates="user", uselist=False, cascade="all, delete-orphan")

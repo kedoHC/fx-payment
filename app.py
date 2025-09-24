@@ -11,6 +11,7 @@ import uuid
 from models import UsersModel, WalletsModel
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from passlib.hash import pbkdf2_sha256
+from flask_migrate import Migrate
 
 def create_app(db_url=None):
 
@@ -52,9 +53,9 @@ def create_app(db_url=None):
       ),
       401,
     )
-
-  with app.app_context():
-    db.create_all()
+  migrate = Migrate(app, db)
+  # with app.app_context():
+  #   db.create_all()
 
   URL_BASE = "/wallets"
 
