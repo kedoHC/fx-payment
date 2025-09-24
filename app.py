@@ -1,15 +1,16 @@
 import os
 from flask import Flask, request, jsonify
-from sqlalchemy.sql.functions import user
 from utils.converter import converter
 from utils.validate_user import validate_user
 from utils.validate_balance import validate_balance
 from flask_smorest import abort
-from schemas import FundSchema, ConvertSchema, WithdrawSchema, CreateUserSchema, CreateWalletSchema, UserListSchema, UserSchema, WalletSchema, WalletListSchema
+from schemas import FundSchema, ConvertSchema, WithdrawSchema, RegisterUserSchema, CreateWalletSchema, UserListSchema, UserSchema, WalletSchema, WalletListSchema
 from marshmallow import ValidationError
 from db import db
 import uuid
 from models import UsersModel, WalletsModel
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from passlib.hash import pbkdf2_sha256
 
 def create_app(db_url=None):
 
@@ -20,6 +21,38 @@ def create_app(db_url=None):
 
   db.init_app(app)
 
+
+  app.config["JWT_SECRET_KEY"] = "monato"
+  jwt = JWTManager(app)
+
+  @jwt.expired_token_loader
+  def expired_token_callback(jwt_header, jwt_payload):
+    return (
+      jsonify({"message": "The token has expired.", "error": "token_expired"}),
+      401,
+    )
+
+  @jwt.invalid_token_loader
+  def invalid_token_callback(error):
+    return (
+      jsonify(
+        {"message": "Signature verification failed.", "error": "invalid_token"}
+      ),
+      401,
+    )
+
+  @jwt.unauthorized_loader
+  def missing_token_callback(error):
+    return (
+      jsonify(
+        {
+          "description": "Request does not contain an access token.",
+          "error": "authorization_required",
+        }
+      ),
+      401,
+    )
+
   with app.app_context():
     db.create_all()
 
@@ -28,7 +61,7 @@ def create_app(db_url=None):
   fund_schema = FundSchema()
   convert_schema = ConvertSchema()
   withdraw_schema = WithdrawSchema()
-  create_user_schema = CreateUserSchema()
+  create_user_schema = RegisterUserSchema()
   create_wallet_schema = CreateWalletSchema()
   user_list_schema = UserListSchema(many=True)
   wallet_list_schema = WalletListSchema(many=True)
@@ -39,6 +72,39 @@ def create_app(db_url=None):
   def greet():
     """ Say hello to Monato Team!"""
     return {"message": "Hello Monato!"}
+
+  # ==========================================================
+  # ==========================================================
+  # POST => LOGIN
+  # ==========================================================
+  # ==========================================================
+  @app.post("/login")
+  def login():
+    """ Create a new user """
+    request_data = request.get_json(force=True)
+
+    if not request_data:
+      abort(400, description="Invalid JSON input.")
+
+    try:
+      validated_data = create_user_schema.load(request_data)
+    except ValidationError as err:
+      return jsonify({"errors": err.messages}), 422
+    
+    # Check if user with same email already exists (DATABASE VERSION)
+    existing_user = UsersModel.query.filter_by(email=validated_data["email"]).first()
+    if not existing_user:
+      return jsonify({"error": "User with this email do not exists."}), 409
+
+    try:
+      if existing_user and pbkdf2_sha256.verify(request_data['password'], existing_user.password):
+        access_token = create_access_token(identity=str(existing_user.id))
+        return {"access_token": access_token}
+    
+    except Exception as e:
+      db.session.rollback()
+      return jsonify({"error": "Failed login"}), 500
+
 
   # ==========================================================
   # ==========================================================
@@ -63,23 +129,17 @@ def create_app(db_url=None):
     existing_user = UsersModel.query.filter_by(email=validated_data["email"]).first()
     if existing_user:
       return jsonify({"error": "User with this email already exists"}), 409
-
-    # Generate UUID for new user
-    user_id = str(uuid.uuid4())
     
     # Create new user in database
     new_user = UsersModel(
-      id=user_id,
-      name=validated_data["name"],
       email=validated_data["email"],
-      age=validated_data["age"],
-      is_active=validated_data.get("is_active", True)
+      password=pbkdf2_sha256.hash(validated_data["password"])
     )
     
     try:
       db.session.add(new_user)
       db.session.commit()
-      return jsonify({"message": "User created successfully", "user_id": user_id}), 201
+      return jsonify({"message": "User created successfully"}), 201
     except Exception as e:
       db.session.rollback()
       return jsonify({"error": "Failed to create user"}), 500
@@ -91,21 +151,26 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.get("/users")
+  @jwt_required()
   def get_all_users():
     """ Get all users from the database """
     try:
       # Query all users from the database
       users = UsersModel.query.all()
+
       # Prepare user data with wallet information
       users_data = []
       for user in users:
+
+        wallet_id = user.wallet.id if user.wallet else None
+
         user_data = {
           "id": user.id,
           "name": user.name,
           "email": user.email,
           "age": user.age,
           "is_active": user.is_active,
-          "wallet_id": user.wallet.id
+          "wallet_id": wallet_id
         }
         users_data.append(user_data)
       
@@ -123,6 +188,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.get("/users/<user_id>")
+  @jwt_required()
   def get_user_by_id(user_id):
     """ Get a specific user by ID with wallet information """
     try:
@@ -146,6 +212,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.post("/wallets")
+  @jwt_required()
   def create_wallet():
     """ Create a new wallet for a user """
     request_data = request.get_json(force=True)
@@ -204,6 +271,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.get("/wallets")
+  @jwt_required()
   def get_all_wallets():
     """ Get all wallets from the database """
     try:
@@ -235,6 +303,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.get("/wallets/<wallet_id>")
+  @jwt_required()
   def get_wallet_by_id(wallet_id):
     """ Get a specific wallet by ID with wallet information """
 
@@ -259,6 +328,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.post(URL_BASE + "/<user_id>/fund")
+  @jwt_required()
   def fund_wallet(user_id):
     """ fund wallet by user id"""
     request_data = request.get_json(force=True)
@@ -298,6 +368,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.post(URL_BASE + "/<user_id>/convert")
+  @jwt_required()
   def convert_currency(user_id):
     """ Convert currency """
     request_data = request.get_json(force=True)
@@ -324,6 +395,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.post(URL_BASE + "/<wallet_id>/withdraw")
+  @jwt_required()
   def withdraw_wallet(wallet_id):
     """ withdraw wallet by user id"""
 
@@ -365,6 +437,7 @@ def create_app(db_url=None):
   # ==========================================================
 
   @app.get(URL_BASE + "/<user_id>/balances")
+  @jwt_required()
   def get_balances(user_id):
     """ get balances MXN and USD"""
     try:

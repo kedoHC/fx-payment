@@ -5,3 +5,5 @@ pytest
 pytest-flask
 sqlalchemy
 flask-sqlalchemy
+flask-jwt-extended
+passlib
