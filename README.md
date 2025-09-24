@@ -86,9 +86,11 @@ The application will start on `http://localhost:5001`
 The FX Payment API provides the following endpoints:
 
 #### User Management
+
 - **POST** `/users` - Create a new user account
 
 #### Wallet Management
+
 - **POST** `/wallets` - Create a new wallet for a user
 - **POST** `/wallets/<user_id>/fund` - Add funds to a wallet (USD amounts automatically converted to MXN for storage)
 - **POST** `/wallets/<user_id>/withdraw` - Withdraw funds from a wallet (USD amounts converted to MXN for balance validation)
@@ -102,6 +104,7 @@ The FX Payment API provides the following endpoints:
 ### Example API Requests
 
 #### Creating a User
+
 ```bash
 # Create a new user
 curl -X POST http://localhost:5001/users \
@@ -112,6 +115,7 @@ curl -X POST http://localhost:5001/users \
 ```
 
 #### Creating a Wallet
+
 ```bash
 # Create a wallet for the user (with $100 USD initial balance)
 curl -X POST http://localhost:5001/wallets \
@@ -122,6 +126,7 @@ curl -X POST http://localhost:5001/wallets \
 ```
 
 #### Funding and Checking Balances
+
 ```bash
 # Fund a wallet with $100 USD (will be stored as 1,870 MXN)
 curl -X POST http://localhost:5001/wallets/f9e8d7c6-b5a4-43f2-1e0d-9c8b7a6f5e4d/fund \
@@ -308,5 +313,6 @@ The application will be available at `http://localhost:5005`
 For development with live code reloading:
 
 ```bash
-docker run -p 5005:5000 -w /app -v "$(pwd):/app" fx-payment
+# docker run -p 5005:5000 -w /app -v "$(pwd):/app"
+docker run -dp 5005:5000 -w /app -v "$(pwd):/app" fx-payment sh -c "flask run --host 0.0.0.0"
 ```
