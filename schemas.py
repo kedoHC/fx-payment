@@ -32,7 +32,7 @@ class UserListSchema(Schema):
   email = fields.Str(dump_only=True)
   age = fields.Int(dump_only=True)
   is_active = fields.Boolean(dump_only=True)
-  wallet_id = fields.Str(dump_only=True)
+  wallet_id = fields.Int(dump_only=True)
   
 class WalletListSchema(Schema):
   id = fields.Int(dump_only=True)
@@ -55,6 +55,6 @@ class WithdrawSchema(Schema):
   amount = fields.Float(required=True)
 
 class CreateWalletSchema(Schema):
-  user_id = fields.Str(required=True)
+  user_id = fields.Int(required=True)
   initial_balance = fields.Float(load_default=0.0, validate=validate.Range(min=0))
   currency = fields.Str(load_default="MXN")

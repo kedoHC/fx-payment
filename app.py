@@ -194,7 +194,7 @@ def create_app(db_url=None):
     """ Get a specific user by ID with wallet information """
     try:
       # Query user by ID from the database
-      user = UsersModel.query.get(user_id)
+      user = db.session.get(UsersModel, user_id)
       
       if not user:
         return jsonify({"error": "User not found"}), 404
@@ -246,11 +246,8 @@ def create_app(db_url=None):
     if currency == "USD":
       initial_balance = converter(initial_balance, "USD")
     
-    # Create new wallet in database
-    wallet_id = str(uuid.uuid4())
-
+    # Create new wallet in database - let DB generate the ID
     new_wallet = WalletsModel(
-      id=wallet_id,
       user_id=user_id,
       balance=initial_balance,
       currency="MXN",
@@ -260,7 +257,7 @@ def create_app(db_url=None):
     try:
       db.session.add(new_wallet)
       db.session.commit()
-      return jsonify({"message": "Wallet created successfully", "user_id": user_id, "wallet_id": wallet_id}), 201
+      return jsonify({"message": "Wallet created successfully", "user_id": user_id, "wallet_id": new_wallet.id}), 201
     except Exception as e:
       db.session.rollback()
       return jsonify({"error": "Failed to create wallet"}), 500
@@ -309,8 +306,8 @@ def create_app(db_url=None):
     """ Get a specific wallet by ID with wallet information """
 
     try:
-      # Query user by ID from the database
-      wallet = WalletsModel.query.get(wallet_id)
+      # Query wallet by ID from the database
+      wallet = db.session.get(WalletsModel, wallet_id)
       
       if not wallet:
         return jsonify({"error": "Wallet not found"}), 404
@@ -442,7 +439,7 @@ def create_app(db_url=None):
   def get_balances(user_id):
     """ get balances MXN and USD"""
     try:
-      user = UsersModel.query.get(user_id)
+      user = db.session.get(UsersModel, user_id)
 
       if user:
         amount_mxn = user.wallet.balance
